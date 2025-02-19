@@ -43,9 +43,12 @@ export default function Register() {
     try {
       await disconnect();
       toast({
-        title: 'Your Wallet has been disconnected',
+        title: 'Disconnected',
+        description: 'Your Wallet has been disconnected',
+        variant: 'default',
       });
     } catch (error) {
+      console.error('Error during disconnection:', error);
       toast({
         title: 'Error',
         description: 'Failed to disconnect wallet',
@@ -80,14 +83,35 @@ export default function Register() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message);
+        if (error.message === 'Wallet already registered') {
+          toast({
+            title: 'Registration Unsuccessful',
+            description: 'Wallet already registered',
+            variant: 'destructive',
+          });
+        } else {
+          toast({
+            title: 'Error',
+            description: error.message,
+            variant: 'destructive',
+          });
+        }
+        return;
       }
 
       // Registration successful
-      console.log('Wallet registered successfully!');
+      toast({
+        title: 'Success',
+        description: 'Congrats! Registration successful',
+        variant: 'default',
+      });
     } catch (error) {
       console.error('Error during registration:', error);
-      // You might want to show this error to the user in a more user-friendly way
+      toast({
+        title: 'Error',
+        description: 'Failed to register wallet',
+        variant: 'destructive',
+      });
     }
   };
 
