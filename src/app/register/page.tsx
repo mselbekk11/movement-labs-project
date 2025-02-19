@@ -116,7 +116,7 @@ export default function Register() {
   };
 
   return (
-    <main className='min-h-screen px-8 py-0 pb-12 flex-1 flex flex-col items-center justify-center'>
+    <main className='h-full px-8 py-0 pb-12 flex-1 flex flex-col items-center justify-center'>
       <Card>
         <CardHeader>
           <CardTitle>Register your wallet</CardTitle>

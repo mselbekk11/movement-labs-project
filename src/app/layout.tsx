@@ -5,6 +5,7 @@ import './globals.css';
 import { headers } from 'next/headers';
 import ContextProvider from '@/../context';
 import { Toaster } from '@/components/ui/toaster';
+import Navigation from '@/components/navigation';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -34,7 +35,10 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
-        <ContextProvider cookies={cookies}>{children}</ContextProvider>
+        <ContextProvider cookies={cookies}>
+          <Navigation />
+          <main className='h-[90vh]'>{children}</main>
+        </ContextProvider>
         <Toaster />
       </body>
     </html>
