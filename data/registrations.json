@@ -1,8 +1,12 @@
 [
-
   {
     "walletType": "EVM",
     "address": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
     "timestamp": 1740003527720
+  },
+  {
+    "walletType": "EVM",
+    "address": "0x2173453bC658149Bc0a2F4f28810415e1F400Df6",
+    "timestamp": 1740004287580
   }
 ]
