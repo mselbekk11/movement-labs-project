@@ -16,6 +16,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 
 import { Button } from '@/components/ui/button';
+import { FlickeringGrid } from '@/components/magicui/flickering-grid';
 
 export default function Register() {
   // Hooks for wallet connection/disconnection
@@ -116,7 +117,15 @@ export default function Register() {
   };
 
   return (
-    <main className='h-full px-8 py-0 pb-12 flex-1 flex flex-col items-center justify-center'>
+    <main className='h-full px-8 py-0 pb-12 flex-1 flex flex-col items-center justify-center relative z-10'>
+      <FlickeringGrid
+        className='fixed inset-0 -z-10 w-screen h-screen'
+        squareSize={4}
+        gridGap={6}
+        color='#6B7280'
+        maxOpacity={0.1}
+        flickerChance={0.1}
+      />
       <Card>
         <CardHeader>
           <CardTitle>Register your wallet</CardTitle>
