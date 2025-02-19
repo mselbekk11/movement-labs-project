@@ -43,14 +43,36 @@ export default function Register() {
   const handleRegister = async () => {
     if (!isConnected) return;
     try {
-      // Define a message that the user will sign.
-      // This can include dynamic data like the wallet address.
-      const message = `Register wallet: ${address}`;
+      // Define a message that includes a timestamp for additional security
+      const timestamp = Date.now();
+      const message = `Register wallet ${address} at timestamp ${timestamp}`;
+
       const signature = await signMessageAsync({ message });
-      console.log('User signed message:', signature);
-      // Optionally, send the signature (and the message) to your backend to verify ownership.
+
+      // Send the data to our API endpoint
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          address,
+          signature,
+          message,
+          timestamp,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message);
+      }
+
+      // Registration successful
+      console.log('Wallet registered successfully!');
     } catch (error) {
-      console.error('Error during signing:', error);
+      console.error('Error during registration:', error);
+      // You might want to show this error to the user in a more user-friendly way
     }
   };
 
