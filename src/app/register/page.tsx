@@ -13,6 +13,8 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 
+import { useToast } from '@/hooks/use-toast';
+
 import { Button } from '@/components/ui/button';
 
 export default function Register() {
@@ -20,6 +22,8 @@ export default function Register() {
   const { open } = useAppKit();
   const { address, isConnected } = useAppKitAccount();
   const { disconnect } = useDisconnect();
+
+  const { toast } = useToast();
 
   // useSignMessage hook to request the wallet signature
   const { signMessageAsync } = useSignMessage({
@@ -36,7 +40,18 @@ export default function Register() {
 
   // Function to disconnect the wallet
   const handleDisconnect = async () => {
-    await disconnect();
+    try {
+      await disconnect();
+      toast({
+        title: 'Your Wallet has been disconnected',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to disconnect wallet',
+        variant: 'destructive',
+      });
+    }
   };
 
   // Function to trigger a signing request for registration

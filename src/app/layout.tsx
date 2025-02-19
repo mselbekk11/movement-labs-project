@@ -4,6 +4,7 @@ import './globals.css';
 
 import { headers } from 'next/headers';
 import ContextProvider from '@/../context';
+import { Toaster } from '@/components/ui/toaster';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -29,11 +30,12 @@ export default async function RootLayout({
   const cookies = headersObj.get('cookie');
 
   return (
-    <html lang='en'>
+    <html lang='en' className='dark'>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
         <ContextProvider cookies={cookies}>{children}</ContextProvider>
+        <Toaster />
       </body>
     </html>
   );
