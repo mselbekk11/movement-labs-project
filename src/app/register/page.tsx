@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { FlickeringGrid } from '@/components/magicui/flickering-grid';
 import ScrambleText from '@/components/scramble-text';
 import Spinner from '@/components/spinner';
+import { getNonce, verifyWallet, registerWallet } from '@/services/auth';
 
 export default function Register() {
   // Hooks for wallet connection/disconnection
@@ -62,69 +63,39 @@ export default function Register() {
     }
   };
 
-  // Update handleRegister to include verification
+  // Update handleRegister to use service functions
   const handleRegister = async () => {
     if (!isConnected || !address) return;
     try {
       setIsRegistering(true);
 
-      // 1. First verify wallet ownership
-      // Get nonce
-      const nonceRes = await fetch('/api/nonce', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address }),
-      });
-      const nonceData = await nonceRes.json();
-      if (!nonceData.nonce) {
-        throw new Error('No nonce returned from server.');
-      }
-
-      // Sign verification message
-      const verificationMessage = `Sign this message to verify wallet ownership. Nonce: ${nonceData.nonce}`;
+      // 1. Get nonce and verify wallet ownership
+      const nonce = await getNonce(address);
+      const verificationMessage = `Sign this message to verify wallet ownership. Nonce: ${nonce}`;
       const verificationSignature = await signMessageAsync({
         message: verificationMessage,
       });
 
-      // Verify ownership
-      const verifyRes = await fetch('/api/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          address,
-          nonce: nonceData.nonce,
-          signature: verificationSignature,
-          message: verificationMessage,
-        }),
+      await verifyWallet({
+        address,
+        nonce,
+        signature: verificationSignature,
+        message: verificationMessage,
       });
 
-      const verifyData = await verifyRes.json();
-      if (!verifyData.success) {
-        throw new Error('Wallet ownership verification failed');
-      }
-
-      // 2. If verified, proceed with registration
+      // 2. Register wallet
       const timestamp = Date.now();
       const registrationMessage = `Register wallet ${address} at timestamp ${timestamp}`;
       const registrationSignature = await signMessageAsync({
         message: registrationMessage,
       });
 
-      const response = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          address,
-          signature: registrationSignature,
-          message: registrationMessage,
-          timestamp,
-        }),
+      await registerWallet({
+        address,
+        signature: registrationSignature,
+        message: registrationMessage,
+        timestamp,
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message);
-      }
 
       toast({
         title: 'Success',
@@ -135,7 +106,6 @@ export default function Register() {
       console.error('Error during registration:', error);
       let errorMessage = 'Failed to register wallet';
 
-      // Check if the error is a rate limit error
       if (
         error instanceof Error &&
         error.message.includes('Too many requests')
