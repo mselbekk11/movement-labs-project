@@ -1,11 +1,24 @@
 // app/api/verify/route.ts
 import { NextResponse } from 'next/server';
 import { ethers } from 'ethers';
+import { rateLimit } from '@/lib/rateLimit';
 
 export const runtime = 'edge';
 
 export async function POST(request: Request) {
   try {
+    // Get IP address from request headers
+    const forwardedFor = request.headers.get('x-forwarded-for');
+    const ip = forwardedFor ? forwardedFor.split(',')[0] : 'unknown';
+    
+    // Rate limit: 10 requests per minute per IP
+    if (!rateLimit(ip, 10)) {
+      return NextResponse.json(
+        { success: false, message: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      );
+    }
+
     const { address, nonce, signature, message } = await request.json();
     console.log('Verify request received:', { address, nonce });
     

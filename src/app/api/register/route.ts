@@ -2,9 +2,28 @@ import { NextResponse } from 'next/server';
 import { verifyMessage } from 'viem';
 import fs from 'fs/promises';
 import path from 'path';
+import { rateLimit } from '@/lib/rateLimit';
+
+interface Registration {
+  walletType: string;
+  address: string;
+  timestamp: number;
+}
 
 export async function POST(request: Request) {
   try {
+    // Get IP address from request headers
+    const forwardedFor = request.headers.get('x-forwarded-for');
+    const ip = forwardedFor ? forwardedFor.split(',')[0] : 'unknown';
+    
+    // Rate limit: 4 requests per minute per IP
+    if (!rateLimit(ip, 4)) {
+      return NextResponse.json(
+        { message: 'Too many registration attempts. Please try again later.' },
+        { status: 429 }
+      );
+    }
+
     const { address, signature, message, timestamp } = await request.json();
 
     // Verify the signature using viem
@@ -28,7 +47,7 @@ export async function POST(request: Request) {
 
     // Check if wallet is already registered
     const isRegistered = registrations.some(
-      (reg: any) => reg.address.toLowerCase() === address.toLowerCase()
+      (reg: Registration) => reg.address.toLowerCase() === address.toLowerCase()
     );
 
     if (isRegistered) {

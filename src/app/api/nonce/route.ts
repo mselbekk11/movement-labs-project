@@ -1,6 +1,7 @@
 // app/api/nonce/route.ts
 import { NextResponse } from 'next/server';
 import { nonceStore } from '../../../lib/nonceStore';
+import { rateLimit } from '@/lib/rateLimit';
 
 export const runtime = 'edge';
 
@@ -13,6 +14,18 @@ function generateNonce() {
 
 export async function POST(request: Request) {
   try {
+    // Get IP address from request headers
+    const forwardedFor = request.headers.get('x-forwarded-for');
+    const ip = forwardedFor ? forwardedFor.split(',')[0] : 'unknown';
+    
+    // Rate limit: 5 requests per minute per IP
+    if (!rateLimit(ip, 5)) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      );
+    }
+
     const { address } = await request.json();
     if (!address) {
       return NextResponse.json({ error: 'No address provided' }, { status: 400 });

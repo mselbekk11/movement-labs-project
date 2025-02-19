@@ -132,10 +132,19 @@ export default function Register() {
       });
     } catch (error) {
       console.error('Error during registration:', error);
+      let errorMessage = 'Failed to register wallet';
+
+      // Check if the error is a rate limit error
+      if (
+        error instanceof Error &&
+        error.message.includes('Too many requests')
+      ) {
+        errorMessage = 'Too many attempts. Please wait a moment and try again.';
+      }
+
       toast({
         title: 'Error',
-        description:
-          error instanceof Error ? error.message : 'Failed to register wallet',
+        description: error instanceof Error ? error.message : errorMessage,
         variant: 'destructive',
       });
     } finally {
