@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useAppKit } from '@reown/appkit/react';
 import { useAppKitAccount } from '@reown/appkit/react';
 import { useDisconnect } from '@reown/appkit/react';
@@ -24,15 +25,13 @@ export default function Register() {
   const { open } = useAppKit();
   const { address, isConnected } = useAppKitAccount();
   const { disconnect } = useDisconnect();
-
   const { toast } = useToast();
 
-  // useSignMessage hook to request the wallet signature
+  // Wagmi hook for signing messages
   const { signMessageAsync } = useSignMessage({
     mutation: {
       onSuccess(signature) {
         console.log('Signature obtained:', signature);
-        // Here you could send the signature to your backend for verification
       },
       onError(error) {
         console.error('Error signing message:', error);
@@ -40,10 +39,16 @@ export default function Register() {
     },
   });
 
-  // Function to disconnect the wallet
+  // Local state for wallet verification process
+  const [verified, setVerified] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [verificationError, setVerificationError] = useState('');
+
+  // Disconnect resets verification state
   const handleDisconnect = async () => {
     try {
       await disconnect();
+      setVerified(false);
       toast({
         title: 'Disconnected',
         description: 'Your Wallet has been disconnected',
@@ -59,17 +64,83 @@ export default function Register() {
     }
   };
 
-  // Function to trigger a signing request for registration
+  // Challenge–response verification on wallet connection
+  useEffect(() => {
+    async function verifyOwnership() {
+      if (isConnected && address && !verified) {
+        try {
+          setVerifying(true);
+          setVerificationError('');
+          // 1. Request a nonce from the backend
+          const nonceRes = await fetch('/api/nonce', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ address }),
+          });
+          const nonceData = await nonceRes.json();
+          if (!nonceData.nonce) {
+            throw new Error('No nonce returned from server.');
+          }
+          const nonce = nonceData.nonce;
+
+          // Add a small delay to ensure nonce is stored
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+
+          // 2. Construct the message that includes the nonce
+          const message = `Sign this message to verify wallet ownership. Nonce: ${nonce}`;
+          // 3. Prompt the user to sign the message
+          const signature = await signMessageAsync({ message });
+          // 4. Send the signature, nonce, and message to your verification endpoint
+          const verifyRes = await fetch('/api/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              address,
+              nonce,
+              signature,
+              message,
+            }),
+          });
+          const verifyData = await verifyRes.json();
+          if (verifyData.success) {
+            setVerified(true);
+            toast({
+              title: 'Wallet Verified',
+              description: 'Your wallet ownership has been verified.',
+              variant: 'default',
+            });
+          } else {
+            throw new Error(verifyData.message || 'Verification failed.');
+          }
+        } catch (error: Error | unknown) {
+          console.error('Verification error:', error);
+          setVerificationError(
+            error instanceof Error ? error.message : 'Unknown error'
+          );
+          toast({
+            title: 'Verification Error',
+            description:
+              error instanceof Error ? error.message : 'Unknown error',
+            variant: 'destructive',
+          });
+        } finally {
+          setVerifying(false);
+        }
+      }
+    }
+    verifyOwnership();
+  }, [isConnected, address, verified, signMessageAsync, toast]);
+
+  // The registration function remains unchanged
   const handleRegister = async () => {
     if (!isConnected) return;
     try {
       // Define a message that includes a timestamp for additional security
       const timestamp = Date.now();
       const message = `Register wallet ${address} at timestamp ${timestamp}`;
-
       const signature = await signMessageAsync({ message });
 
-      // Send the data to our API endpoint
+      // Send the data to our API endpoint for registration
       const response = await fetch('/api/register', {
         method: 'POST',
         headers: {
@@ -146,12 +217,14 @@ export default function Register() {
           <div>
             <CardHeader>
               <CardTitle className='mb-2'>Connected Wallet:</CardTitle>
-              {/* <CardDescription>{address ?? ''}</CardDescription> */}
               <ScrambleText text={address ?? ''} />
             </CardHeader>
             <CardContent>
               <div className='flex justify-between gap-4'>
-                <Button className='w-full font-semibold' onClick={handleDisconnect}>
+                <Button
+                  className='w-full font-semibold'
+                  onClick={handleDisconnect}
+                >
                   Disconnect Wallet
                 </Button>
                 <Button
@@ -165,6 +238,22 @@ export default function Register() {
             </CardContent>
           </div>
         )}
+      </Card>
+      <Card className='w-full max-w-[450px] mt-4'>
+        <CardHeader>
+          {!verified && (
+            <CardTitle className='text-yellow-600'>
+              {verifying
+                ? 'Verifying wallet ownership...'
+                : verificationError
+                ? `Verification error: ${verificationError}`
+                : 'Wallet not verified'}
+            </CardTitle>
+          )}
+          {verified && (
+            <CardTitle className='text-green-600'>Wallet Verified!</CardTitle>
+          )}
+        </CardHeader>
       </Card>
     </main>
   );
