@@ -3,5 +3,10 @@
     "walletType": "EVM",
     "address": "0x68F79d481ed68cf7D43054eee35274D1F172d548",
     "timestamp": 1739944059879
+  },
+  {
+    "walletType": "EVM",
+    "address": "0x5c656C87f859fBaa3EF0d4f61335E3d387C15BD0",
+    "timestamp": 1739946358638
   }
 ]

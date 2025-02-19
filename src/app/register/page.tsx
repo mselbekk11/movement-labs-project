@@ -126,35 +126,43 @@ export default function Register() {
         maxOpacity={0.1}
         flickerChance={0.1}
       />
-      <Card>
-        <CardHeader>
-          <CardTitle>Register your wallet</CardTitle>
-          <CardDescription>
-            Please connect your wallet to register
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className='max-w-4xl flex flex-col gap-4'>
-            {!isConnected ? (
-              <Button onClick={() => open()}>Connect Wallet</Button>
-            ) : (
-              <div className='flex-1 space-y-1'>
-                <div className='mb-4'>
-                  <p className='text-sm font-bold leading-none'>
-                    Connected Wallet:
-                  </p>
-                  <p className='text-sm text-muted-foreground'>{address}</p>
-                </div>
-                <div className='flex justify-between'>
-                  <Button onClick={handleDisconnect}>Disconnect Wallet</Button>
-                  <Button variant='outline' onClick={handleRegister}>
-                    Register Wallet
-                  </Button>
-                </div>
-              </div>
-            )}
+      <Card className='w-full max-w-[400px]'>
+        {!isConnected ? (
+          <div>
+            <CardHeader>
+              <CardTitle>Register your wallet</CardTitle>
+              <CardDescription>
+                Please connect your wallet to register
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button className='w-full' onClick={() => open()}>
+                Connect Wallet
+              </Button>
+            </CardContent>
           </div>
-        </CardContent>
+        ) : (
+          <div>
+            <CardHeader>
+              <CardTitle className='mb-2'>Connected Wallet:</CardTitle>
+              <CardDescription>{address}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className='flex justify-between gap-4'>
+                <Button className='w-full' onClick={handleDisconnect}>
+                  Disconnect Wallet
+                </Button>
+                <Button
+                  className='w-full'
+                  variant='outline'
+                  onClick={handleRegister}
+                >
+                  Register Wallet
+                </Button>
+              </div>
+            </CardContent>
+          </div>
+        )}
       </Card>
     </main>
   );
