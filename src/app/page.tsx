@@ -17,7 +17,7 @@ export default function Home() {
       />
       {/* <h1 className='text-2xl font-bold'>Welcome to Movement Labs</h1> */}
       <Link href='/register'>
-        <Button>Register your Wallet</Button>
+        <Button className='font-semibold'>Register your Wallet</Button>
       </Link>
     </main>
   );

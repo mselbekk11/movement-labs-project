@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 
 import { Button } from '@/components/ui/button';
 import { FlickeringGrid } from '@/components/magicui/flickering-grid';
+import ScrambleText from '@/components/scramble-text';
 
 export default function Register() {
   // Hooks for wallet connection/disconnection
@@ -126,7 +127,7 @@ export default function Register() {
         maxOpacity={0.1}
         flickerChance={0.1}
       />
-      <Card className='w-full max-w-[400px]'>
+      <Card className='w-full max-w-[450px]'>
         {!isConnected ? (
           <div>
             <CardHeader>
@@ -136,7 +137,7 @@ export default function Register() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className='w-full' onClick={() => open()}>
+              <Button className='w-full font-semibold' onClick={() => open()}>
                 Connect Wallet
               </Button>
             </CardContent>
@@ -145,15 +146,16 @@ export default function Register() {
           <div>
             <CardHeader>
               <CardTitle className='mb-2'>Connected Wallet:</CardTitle>
-              <CardDescription>{address}</CardDescription>
+              {/* <CardDescription>{address ?? ''}</CardDescription> */}
+              <ScrambleText text={address ?? ''} />
             </CardHeader>
             <CardContent>
               <div className='flex justify-between gap-4'>
-                <Button className='w-full' onClick={handleDisconnect}>
+                <Button className='w-full font-semibold' onClick={handleDisconnect}>
                   Disconnect Wallet
                 </Button>
                 <Button
-                  className='w-full'
+                  className='w-full font-semibold'
                   variant='outline'
                   onClick={handleRegister}
                 >
