@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useAppKit } from '@reown/appkit/react';
 import { useAppKitAccount } from '@reown/appkit/react';
 import { useDisconnect } from '@reown/appkit/react';
@@ -40,14 +40,12 @@ export default function Register() {
   });
 
   // Local state for wallet verification process
-  const [verified, setVerified] = useState(false);
-  const [verifying, setVerifying] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
 
   // Disconnect resets verification state
   const handleDisconnect = async () => {
     try {
       await disconnect();
-      setVerified(false);
       toast({
         title: 'Disconnected',
         description: 'Your Wallet has been disconnected',
@@ -63,122 +61,70 @@ export default function Register() {
     }
   };
 
-  // Challenge–response verification on wallet connection
-  useEffect(() => {
-    async function verifyOwnership() {
-      if (isConnected && address && !verified) {
-        try {
-          setVerifying(true);
-          console.log('Verification status: Starting verification process');
-
-          // 1. Request a nonce from the backend
-          const nonceRes = await fetch('/api/nonce', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ address }),
-          });
-          const nonceData = await nonceRes.json();
-          if (!nonceData.nonce) {
-            console.error('Verification status: No nonce returned from server');
-            throw new Error('No nonce returned from server.');
-          }
-          const nonce = nonceData.nonce;
-
-          // Store nonce in localStorage
-          localStorage.setItem(`nonce_${address.toLowerCase()}`, nonce);
-          console.log('Stored nonce in localStorage:', nonce);
-
-          // 2. Construct the message that includes the nonce
-          const message = `Sign this message to verify wallet ownership. Nonce: ${nonce}`;
-          console.log('Sending verification with nonce:', nonce);
-          // 3. Prompt the user to sign the message
-          const signature = await signMessageAsync({ message });
-          // 4. Send the signature, nonce, and message to your verification endpoint
-          const verifyRes = await fetch('/api/verify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              address,
-              nonce,
-              signature,
-              message,
-            }),
-          });
-          const verifyData = await verifyRes.json();
-          if (verifyData.success) {
-            setVerified(true);
-            console.log('Verification status: Wallet successfully verified');
-            toast({
-              title: 'Wallet Verified',
-              description: 'Your wallet ownership has been verified.',
-              variant: 'default',
-            });
-          } else {
-            console.error('Verification status: Verification failed');
-            throw new Error(verifyData.message || 'Verification failed.');
-          }
-        } catch (error: Error | unknown) {
-          console.error('Verification status:', error);
-          toast({
-            title: 'Verification Error',
-            description:
-              error instanceof Error ? error.message : 'Unknown error',
-            variant: 'destructive',
-          });
-        } finally {
-          console.log(
-            'Verification status: Process completed, verifying =',
-            false
-          );
-          setVerifying(false);
-        }
-      }
-    }
-    verifyOwnership();
-  }, [isConnected, address, verified, signMessageAsync, toast]);
-
-  // The registration function remains unchanged
+  // Update handleRegister to include verification
   const handleRegister = async () => {
-    if (!isConnected) return;
+    if (!isConnected || !address) return;
     try {
-      // Define a message that includes a timestamp for additional security
-      const timestamp = Date.now();
-      const message = `Register wallet ${address} at timestamp ${timestamp}`;
-      const signature = await signMessageAsync({ message });
+      setIsRegistering(true);
 
-      // Send the data to our API endpoint for registration
-      const response = await fetch('/api/register', {
+      // 1. First verify wallet ownership
+      // Get nonce
+      const nonceRes = await fetch('/api/nonce', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address }),
+      });
+      const nonceData = await nonceRes.json();
+      if (!nonceData.nonce) {
+        throw new Error('No nonce returned from server.');
+      }
+
+      // Sign verification message
+      const verificationMessage = `Sign this message to verify wallet ownership. Nonce: ${nonceData.nonce}`;
+      const verificationSignature = await signMessageAsync({
+        message: verificationMessage,
+      });
+
+      // Verify ownership
+      const verifyRes = await fetch('/api/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           address,
-          signature,
-          message,
+          nonce: nonceData.nonce,
+          signature: verificationSignature,
+          message: verificationMessage,
+        }),
+      });
+
+      const verifyData = await verifyRes.json();
+      if (!verifyData.success) {
+        throw new Error('Wallet ownership verification failed');
+      }
+
+      // 2. If verified, proceed with registration
+      const timestamp = Date.now();
+      const registrationMessage = `Register wallet ${address} at timestamp ${timestamp}`;
+      const registrationSignature = await signMessageAsync({
+        message: registrationMessage,
+      });
+
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          address,
+          signature: registrationSignature,
+          message: registrationMessage,
           timestamp,
         }),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        if (error.message === 'Wallet already registered') {
-          toast({
-            title: 'Registration Unsuccessful',
-            description: 'Wallet already registered',
-            variant: 'destructive',
-          });
-        } else {
-          toast({
-            title: 'Error',
-            description: error.message,
-            variant: 'destructive',
-          });
-        }
-        return;
+        throw new Error(error.message);
       }
 
-      // Registration successful
       toast({
         title: 'Success',
         description: 'Congrats! Registration successful',
@@ -188,9 +134,12 @@ export default function Register() {
       console.error('Error during registration:', error);
       toast({
         title: 'Error',
-        description: 'Failed to register wallet',
+        description:
+          error instanceof Error ? error.message : 'Failed to register wallet',
         variant: 'destructive',
       });
+    } finally {
+      setIsRegistering(false);
     }
   };
 
@@ -205,7 +154,7 @@ export default function Register() {
         flickerChance={0.1}
       />
       <Card className='w-full max-w-[450px]'>
-        {!isConnected || verifying ? (
+        {!isConnected ? (
           <div>
             <CardHeader>
               <CardTitle>Register your wallet</CardTitle>
@@ -214,38 +163,8 @@ export default function Register() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button
-                className='w-full font-semibold'
-                onClick={() => open()}
-                disabled={verifying}
-              >
-                {verifying ? (
-                  <>
-                    <span className='mr-2'>Verifying</span>
-                    <svg
-                      className='animate-spin h-5 w-5'
-                      xmlns='http://www.w3.org/2000/svg'
-                      fill='none'
-                      viewBox='0 0 24 24'
-                    >
-                      <circle
-                        className='opacity-25'
-                        cx='12'
-                        cy='12'
-                        r='10'
-                        stroke='currentColor'
-                        strokeWidth='4'
-                      />
-                      <path
-                        className='opacity-75'
-                        fill='currentColor'
-                        d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
-                      />
-                    </svg>
-                  </>
-                ) : (
-                  'Connect Wallet'
-                )}
+              <Button className='w-full font-semibold' onClick={() => open()}>
+                Connect Wallet
               </Button>
             </CardContent>
           </div>
@@ -267,14 +186,35 @@ export default function Register() {
                   className='w-full font-semibold'
                   variant='outline'
                   onClick={handleRegister}
-                  disabled={!verified}
-                  title={
-                    !verified
-                      ? 'Please verify wallet ownership first'
-                      : 'Register your wallet'
-                  }
+                  disabled={isRegistering}
                 >
-                  Register Wallet
+                  {isRegistering ? (
+                    <>
+                      <span className='mr-2'>Registering</span>
+                      <svg
+                        className='animate-spin h-5 w-5'
+                        xmlns='http://www.w3.org/2000/svg'
+                        fill='none'
+                        viewBox='0 0 24 24'
+                      >
+                        <circle
+                          className='opacity-25'
+                          cx='12'
+                          cy='12'
+                          r='10'
+                          stroke='currentColor'
+                          strokeWidth='4'
+                        />
+                        <path
+                          className='opacity-75'
+                          fill='currentColor'
+                          d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
+                        />
+                      </svg>
+                    </>
+                  ) : (
+                    'Register Wallet'
+                  )}
                 </Button>
               </div>
             </CardContent>
