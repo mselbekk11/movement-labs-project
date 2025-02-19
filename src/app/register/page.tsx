@@ -42,7 +42,6 @@ export default function Register() {
   // Local state for wallet verification process
   const [verified, setVerified] = useState(false);
   const [verifying, setVerifying] = useState(false);
-  const [verificationError, setVerificationError] = useState('');
 
   // Disconnect resets verification state
   const handleDisconnect = async () => {
@@ -70,7 +69,8 @@ export default function Register() {
       if (isConnected && address && !verified) {
         try {
           setVerifying(true);
-          setVerificationError('');
+          console.log('Verification status: Starting verification process');
+
           // 1. Request a nonce from the backend
           const nonceRes = await fetch('/api/nonce', {
             method: 'POST',
@@ -79,6 +79,7 @@ export default function Register() {
           });
           const nonceData = await nonceRes.json();
           if (!nonceData.nonce) {
+            console.error('Verification status: No nonce returned from server');
             throw new Error('No nonce returned from server.');
           }
           const nonce = nonceData.nonce;
@@ -106,19 +107,18 @@ export default function Register() {
           const verifyData = await verifyRes.json();
           if (verifyData.success) {
             setVerified(true);
+            console.log('Verification status: Wallet successfully verified');
             toast({
               title: 'Wallet Verified',
               description: 'Your wallet ownership has been verified.',
               variant: 'default',
             });
           } else {
+            console.error('Verification status: Verification failed');
             throw new Error(verifyData.message || 'Verification failed.');
           }
         } catch (error: Error | unknown) {
-          console.error('Verification error:', error);
-          setVerificationError(
-            error instanceof Error ? error.message : 'Unknown error'
-          );
+          console.error('Verification status:', error);
           toast({
             title: 'Verification Error',
             description:
@@ -126,6 +126,10 @@ export default function Register() {
             variant: 'destructive',
           });
         } finally {
+          console.log(
+            'Verification status: Process completed, verifying =',
+            false
+          );
           setVerifying(false);
         }
       }
@@ -201,7 +205,7 @@ export default function Register() {
         flickerChance={0.1}
       />
       <Card className='w-full max-w-[450px]'>
-        {!isConnected ? (
+        {!isConnected || verifying ? (
           <div>
             <CardHeader>
               <CardTitle>Register your wallet</CardTitle>
@@ -210,8 +214,38 @@ export default function Register() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className='w-full font-semibold' onClick={() => open()}>
-                Connect Wallet
+              <Button
+                className='w-full font-semibold'
+                onClick={() => open()}
+                disabled={verifying}
+              >
+                {verifying ? (
+                  <>
+                    <span className='mr-2'>Verifying</span>
+                    <svg
+                      className='animate-spin h-5 w-5'
+                      xmlns='http://www.w3.org/2000/svg'
+                      fill='none'
+                      viewBox='0 0 24 24'
+                    >
+                      <circle
+                        className='opacity-25'
+                        cx='12'
+                        cy='12'
+                        r='10'
+                        stroke='currentColor'
+                        strokeWidth='4'
+                      />
+                      <path
+                        className='opacity-75'
+                        fill='currentColor'
+                        d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
+                      />
+                    </svg>
+                  </>
+                ) : (
+                  'Connect Wallet'
+                )}
               </Button>
             </CardContent>
           </div>
@@ -246,22 +280,6 @@ export default function Register() {
             </CardContent>
           </div>
         )}
-      </Card>
-      <Card className='w-full max-w-[450px] mt-4'>
-        <CardHeader>
-          {!verified && (
-            <CardTitle className='text-yellow-600'>
-              {verifying
-                ? 'Verifying wallet ownership...'
-                : verificationError
-                ? `Verification error: ${verificationError}`
-                : 'Wallet not verified'}
-            </CardTitle>
-          )}
-          {verified && (
-            <CardTitle className='text-green-600'>Wallet Verified!</CardTitle>
-          )}
-        </CardHeader>
       </Card>
     </main>
   );
