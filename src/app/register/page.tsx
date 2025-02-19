@@ -83,11 +83,13 @@ export default function Register() {
           }
           const nonce = nonceData.nonce;
 
-          // Add a small delay to ensure nonce is stored
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+          // Store nonce in localStorage
+          localStorage.setItem(`nonce_${address.toLowerCase()}`, nonce);
+          console.log('Stored nonce in localStorage:', nonce);
 
           // 2. Construct the message that includes the nonce
           const message = `Sign this message to verify wallet ownership. Nonce: ${nonce}`;
+          console.log('Sending verification with nonce:', nonce);
           // 3. Prompt the user to sign the message
           const signature = await signMessageAsync({ message });
           // 4. Send the signature, nonce, and message to your verification endpoint
@@ -231,6 +233,12 @@ export default function Register() {
                   className='w-full font-semibold'
                   variant='outline'
                   onClick={handleRegister}
+                  disabled={!verified}
+                  title={
+                    !verified
+                      ? 'Please verify wallet ownership first'
+                      : 'Register your wallet'
+                  }
                 >
                   Register Wallet
                 </Button>
