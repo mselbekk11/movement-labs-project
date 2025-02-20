@@ -2,35 +2,80 @@
 
 ## Getting Started
 
-First, run the development server:
+1. Clone the repository:
+
+```bash
+git clone https://github.com/mselbekk11/movement-labs-project
+cd movement-labs-project
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Start the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result. Please use port 3000 as appkit is configured to use this url.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## How to use
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Click register your Wallet on the homepage, this will take you to the register route
+- Click **Connect Wallet** & choose either MetaMask (EVM) or OKX (Movement)
+- Click **Register Wallet**
+- Confirm signature request
+- Confirm registration request
+- Wallet data will be added to data/registrations.json
 
-## Learn More
+## Wallet Ownership Verification
 
-To learn more about Next.js, take a look at the following resources:
+I have implemented a secure wallet authentication system where users prove they own a cryptocurrency wallet by signing a unique challenge (nonce) with their private key. The server verifies this ownership by checking that the signature could only have come from the claimed wallet address, ensuring that users can't register wallets they don't actually control.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Preventing Bot / Sybil Registrations
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+There were many options to choose from and I decided to use a rate limiting system, which tracks requests per IP address. Each API endpoint has different rate limits based on its sensitivity.
 
-## Deploy on Vercel
+- Nonce Generation (/api/nonce):
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+  - 5 requests per minute per IP
+  - Prevents spam of nonce generation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Signature Verification (/api/verify):
+
+  - 10 requests per minute per IP
+  - More lenient since verification might need multiple attempts
+
+- Registration (/api/register):
+
+  - 4 requests per minute per IP
+  - Most restrictive because it's the most sensitive operation
+
+- Limitations
+  - In-memory storage means rate limits reset on server restart
+  - IP-based limiting can be bypassed with proxy networks
+  - Doesn't prevent multiple registrations from different wallets controlled by the same entity
+
+## Things I used
+
+- [reown AppKit](https://reown.com/) - open-source solution to integrate wallet connections.
+- [wagmi](https://wagmi.sh/) - provides hooks to interact with blockchain networks.
+- [ethers.js](https://docs.ethers.org/v6/) - used for cryptographic signature verification of Ethereum wallet signatures.
+- [shadcn/ui](https://ui.shadcn.com/) - for styled components.
+- [Magic UI](https://magicui.design/) - for the animated background.
+- [Motion Primitives](https://motion-primitives.com/) - for the scrambeled wallet text.
+
+## Things I would improve
+
+- In regards to Preventing Bot / Sybil Registrations I would look into more robust solutions like:
+
+  - Proof of Humanity integration
+  - Captcha systems
+  - Blockchain-based reputation systems
+  - More sophisticated rate limiting (e.g. Redis-based)
+
+- In regards to Wallet Ownership Verification, I would not store the nonce in-memory and would look to store it in a persistent database like Redis for example.
