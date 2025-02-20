@@ -1,3 +1,6 @@
+// This file implements a registration API endpoint
+// It verifies the wallet's signature and adds the wallet to the registrations list
+
 import { NextResponse } from 'next/server';
 import { verifyMessage } from 'viem';
 import fs from 'fs/promises';

@@ -1,3 +1,5 @@
+// config file for wagmi adapter
+
 import { cookieStorage, createStorage } from 'wagmi';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { mainnet } from '@reown/appkit/networks';

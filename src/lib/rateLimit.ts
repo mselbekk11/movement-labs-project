@@ -1,3 +1,5 @@
+// this is a simple rate limit store that is used to limit the number of requests per IP address
+
 interface RateLimitStore {
   [ip: string]: {
     count: number;

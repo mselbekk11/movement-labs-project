@@ -1,4 +1,6 @@
-// app/api/nonce/route.ts
+// This file implements a nonce (number used once) generation API endpoint
+// It creates a secure random nonce that can be used for authentication or verification purposes
+
 import { NextResponse } from 'next/server';
 import { nonceStore } from '../../../lib/nonceStore';
 import { rateLimit } from '@/lib/rateLimit';

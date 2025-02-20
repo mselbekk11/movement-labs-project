@@ -1,3 +1,5 @@
+// context file for appkit
+
 'use client';
 
 import { wagmiAdapter, projectId } from '@/../config';
@@ -15,17 +17,17 @@ if (!projectId) {
   throw new Error('Project ID is not defined');
 }
 
-// Set up metadata
+// This is the metadata for the appkit modal that will be displayed within wallets.
 const metadata = {
   name: 'Movement Labs',
   description: 'Movement Labs Wallet Registration',
-  url: 'http://localhost:3000', // origin must match your domain & subdomain
+  url: 'http://localhost:3000',
   icons: [
     'https://9gkyc4ano8.ufs.sh/f/bQmZVzMJri47eNBv4b6vj7OIPFERVM3fCUYZsk6uceb4N5Ar',
   ],
 };
 
-// Create the modal
+// This is the modal that will appear when you click connect wallet. The featured wallet IDs are Metamask (EVM) and OKX (Movement Labs).
 export const modal = createAppKit({
   adapters: [wagmiAdapter],
   projectId,

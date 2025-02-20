@@ -1,4 +1,5 @@
-// app/api/verify/route.ts
+// This file is an API route handler that verifies Ethereum wallet signatures
+
 import { NextResponse } from 'next/server';
 import { ethers } from 'ethers';
 import { rateLimit } from '@/lib/rateLimit';

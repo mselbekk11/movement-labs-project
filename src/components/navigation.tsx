@@ -9,5 +9,3 @@ export default function Navigation() {
     </nav>
   );
 }
-
-// bg-[#FFC70E]

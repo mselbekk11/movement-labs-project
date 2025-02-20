@@ -1,3 +1,6 @@
+// The main functionality of the app lives here.
+// It handles the wallet connection, disconnection, authentication and registration.
+
 'use client';
 
 import { useState } from 'react';
@@ -27,6 +30,8 @@ export default function Register() {
   const { open } = useAppKit();
   const { address, isConnected } = useAppKitAccount();
   const { disconnect } = useDisconnect();
+
+  // Hook for toast notifications
   const { toast } = useToast();
 
   // Wagmi hook for signing messages
@@ -44,7 +49,7 @@ export default function Register() {
   // Local state for wallet verification process
   const [isRegistering, setIsRegistering] = useState(false);
 
-  // Disconnect resets verification state
+  // Disconnect wallet function
   const handleDisconnect = async () => {
     try {
       await disconnect();
@@ -63,7 +68,7 @@ export default function Register() {
     }
   };
 
-  // Update handleRegister to use service functions
+  // handle register wallet function - verify wallet ownership and register wallet functionality
   const handleRegister = async () => {
     if (!isConnected || !address) return;
     try {
