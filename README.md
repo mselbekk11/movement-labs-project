@@ -6,16 +6,27 @@
 
 ```bash
 git clone https://github.com/mselbekk11/movement-labs-project
+```
+
+2. Open the repository in your code editor:
+
+```bash
 cd movement-labs-project
 ```
 
-2. Install dependencies:
+3. Create a .env file and add the following:
+
+```bash
+NEXT_PUBLIC_PROJECT_ID = 6d61173f270460ed65c7cf4c3f47df04
+```
+
+4. Install dependencies:
 
 ```bash
 npm install
 ```
 
-3. Start the development server:
+5. Start the development server:
 
 ```bash
 npm run dev
