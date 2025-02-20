@@ -6,12 +6,12 @@ import { useEffect, useState } from 'react';
 export default function ScrambleText({ text }: { text: string }) {
   const [trigger, setTrigger] = useState(true);
 
-  // Using a UseEffect so the text scrambles every 6 seconds
+  // Using a UseEffect so the text scrambles every 4 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setTrigger(false);
       setTimeout(() => setTrigger(true), 100);
-    }, 6000);
+    }, 4000);
 
     return () => clearInterval(interval);
   }, []);
