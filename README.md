@@ -36,7 +36,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## How to use
 
-- Click register your Wallet on the homepage, this will take you to the register route
+- Click **Register your Wallet** on the homepage, this will take you to the register route
 - Click **Connect Wallet** & choose either MetaMask (EVM) or OKX (Movement)
 - Click **Register Wallet**
 - Confirm signature request
