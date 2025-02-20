@@ -57,9 +57,11 @@ export async function registerWallet(params: {
     body: JSON.stringify(params),
   });
   
+  const data = await response.json();
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message);
+    // Return an object with success: false and the error message
+    // instead of throwing an error
+    return { success: false, message: data.message };
   }
-  return response.json();
+  return { success: true, data };
 }

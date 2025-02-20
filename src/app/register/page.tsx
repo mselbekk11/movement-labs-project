@@ -95,12 +95,21 @@ export default function Register() {
         message: registrationMessage,
       });
 
-      await registerWallet({
+      const result = await registerWallet({
         address,
         signature: registrationSignature,
         message: registrationMessage,
         timestamp,
       });
+
+      if (!result.success) {
+        toast({
+          title: 'Unsuccessful',
+          description: result.message,
+          variant: 'destructive',
+        });
+        return;
+      }
 
       toast({
         title: 'Success',
