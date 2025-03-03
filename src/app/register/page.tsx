@@ -27,7 +27,7 @@ import { getNonce, verifyWallet, registerWallet } from '@/services/auth';
 
 export default function Register() {
   // I am using Appkit from Reown to handle the wallet connection.
-  // AppKit is a comprehensive toolkit designed for developers to easily integrate wallet connections  into their apps across both EVM and non-EVM chains
+  // AppKit is a comprehensive toolkit designed for developers to easily integrate wallet connections into their apps across both EVM and non-EVM chains
   const { open } = useAppKit();
   const { address, isConnected } = useAppKitAccount();
   const { disconnect } = useDisconnect();
@@ -79,10 +79,15 @@ export default function Register() {
 
       // 1. Get nonce
       const nonce = await getNonce(address);
+      // show wagmi hook
+      // Once nonce has been created, We create a verification message containing the nonce and get it signed by the wallet using the wagmi hook
       const verificationMessage = `Sign this message to verify wallet ownership. Nonce: ${nonce}`;
       const verificationSignature = await signMessageAsync({
         message: verificationMessage,
       });
+      // Click Confirm
+      // once confirmed this data is then passed to the verifyWallet function
+
 
       // 2. Verify wallet ownership
       await verifyWallet({

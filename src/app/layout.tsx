@@ -44,3 +44,7 @@ export default async function RootLayout({
     </html>
   );
 }
+
+// The App loads the layout.tsx file which serves as the root layout and consists of
+// my header where I include the logo
+// a main element that wraps all child pages

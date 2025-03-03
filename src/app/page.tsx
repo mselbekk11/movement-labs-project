@@ -15,10 +15,12 @@ export default function Home() {
         maxOpacity={0.1}
         flickerChance={0.1}
       />
-      {/* <h1 className='text-2xl font-bold'>Welcome to Movement Labs</h1> */}
       <Link href='/register'>
         <Button className='font-semibold'>Register your Wallet</Button>
       </Link>
     </main>
   );
 }
+
+// this contains the button which when clicked uses
+// nexts link component which is a static route to my register page
