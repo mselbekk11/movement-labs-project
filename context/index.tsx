@@ -1,4 +1,6 @@
 // context file for appkit
+// This wraps the whole application to provide wallet connectivity
+// This is the main file that connects the app to the wallet
 
 'use client';
 

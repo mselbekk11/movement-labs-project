@@ -26,7 +26,8 @@ import Spinner from '@/components/spinner';
 import { getNonce, verifyWallet, registerWallet } from '@/services/auth';
 
 export default function Register() {
-  // Hooks for wallet connection/disconnection
+  // I am using Appkit from Reown to handle the wallet connection.
+  // AppKit is a comprehensive toolkit designed for developers to easily integrate wallet connections and other Web3 functionalities into their apps across both EVM and non-EVM chains
   const { open } = useAppKit();
   const { address, isConnected } = useAppKitAccount();
   const { disconnect } = useDisconnect();
@@ -34,7 +35,9 @@ export default function Register() {
   // Hook for toast notifications
   const { toast } = useToast();
 
-  // Wagmi hook for signing messages
+  // Wagmi hook for signing messages - used twice in the handleRegister function
+  // First for authentication (verifying wallet ownership)
+  // Second for registration (registering wallet)
   const { signMessageAsync } = useSignMessage({
     mutation: {
       onSuccess(signature) {
@@ -46,10 +49,10 @@ export default function Register() {
     },
   });
 
-  // Local state for wallet verification process
+  // Local state for wallet verification process - adds a loading state to the register button
   const [isRegistering, setIsRegistering] = useState(false);
 
-  // Disconnect wallet function
+  // Disconnect wallet function from appkit- disconnects the wallet and shows a toast notification
   const handleDisconnect = async () => {
     try {
       await disconnect();
@@ -74,13 +77,14 @@ export default function Register() {
     try {
       setIsRegistering(true);
 
-      // 1. Get nonce and verify wallet ownership
+      // 1. Get nonce
       const nonce = await getNonce(address);
       const verificationMessage = `Sign this message to verify wallet ownership. Nonce: ${nonce}`;
       const verificationSignature = await signMessageAsync({
         message: verificationMessage,
       });
 
+      // 2. Verify wallet ownership
       await verifyWallet({
         address,
         nonce,
@@ -88,7 +92,7 @@ export default function Register() {
         message: verificationMessage,
       });
 
-      // 2. Register wallet
+      // 3. Register wallet
       const timestamp = Date.now();
       const registrationMessage = `Register wallet ${address} at timestamp ${timestamp}`;
       const registrationSignature = await signMessageAsync({
@@ -102,6 +106,7 @@ export default function Register() {
         timestamp,
       });
 
+      // 4. If the registration is not successful, show a toast notification
       if (!result.success) {
         toast({
           title: 'Unsuccessful',
@@ -111,6 +116,7 @@ export default function Register() {
         return;
       }
 
+      // 5. If the registration is successful, show a toast notification
       toast({
         title: 'Success',
         description: 'Congrats! Registration successful',

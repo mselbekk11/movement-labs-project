@@ -1,7 +1,7 @@
 // this is the service file for the auth endpoints
 
-// Gets a random nonce (number used once) from the server for a given wallet address
-// Makes a POST request to /api/nonce endpoint
+// this getNonce function makes an HTTP POST request to the API route /api/nonce which includes the users wallet address
+// if a random nonce is succesfully created by the server, it is returned to the client
 export async function getNonce(address: string) {
   const response = await fetch('/api/nonce', {
     method: 'POST',
@@ -15,12 +15,11 @@ export async function getNonce(address: string) {
   return data.nonce;
 }
 
-// Verifies wallet ownership by checking:
+// this verifyWallet function makes an HTTP POST request to the API route /api/verify which includes:
 // The wallet address
 // The nonce received earlier
 // A signature created by the wallet
 // The message that was signed
-// Makes a POST request to /api/verify endpoint
 export async function verifyWallet(params: {
   address: string;
   nonce: string;
@@ -39,12 +38,11 @@ export async function verifyWallet(params: {
   return data;
 }
 
-// Registers a wallet in the system with:
+// this registerWallet function makes an HTTP POST request to the API route /api/register which includes:
 // The wallet address
-// A signature
+// A signature created by the wallet
 // The signed message
 // A timestamp
-// Makes a POST request to /api/register endpoint
 export async function registerWallet(params: {
   address: string;
   signature: string;

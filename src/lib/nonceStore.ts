@@ -1,4 +1,7 @@
-// this is a simple nonce store that is used to store nonces for wallets
+// This is an object that stores nonces associated with a wallet addresses. 
+// It's structured as a key-value store where:
+// The key is a wallet address (string)
+// The value is the nonce (string)
 
 export const nonceStore: { [address: string]: string } = {};
 

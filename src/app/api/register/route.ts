@@ -13,8 +13,11 @@ interface Registration {
   timestamp: number;
 }
 
+// POST Endpoint Handler
 export async function POST(request: Request) {
   try {
+    // 1. Rate limiting check
+
     // Get IP address from request headers
     const forwardedFor = request.headers.get('x-forwarded-for');
     const ip = forwardedFor ? forwardedFor.split(',')[0] : 'unknown';
@@ -27,15 +30,18 @@ export async function POST(request: Request) {
       );
     }
 
+    // Gets the data from the request body
     const { address, signature, message, timestamp } = await request.json();
 
-    // Verify the signature using viem
+    // 2. Verify the signature using viem (double checking ownership)
+    // viem is a library for interacting with the Ethereum blockchain
     const isValid = await verifyMessage({
       address: address as `0x${string}`,
       message,
       signature: signature as `0x${string}`,
     });
 
+    // If the signature is invalid, return an error
     if (!isValid) {
       return NextResponse.json(
         { message: 'Invalid signature' },
@@ -43,12 +49,12 @@ export async function POST(request: Request) {
       );
     }
 
-    // Read the existing registrations
+    // 3. Read the existing registrations
     const registrationsPath = path.join(process.cwd(), 'data/registrations.json');
     const fileContent = await fs.readFile(registrationsPath, 'utf-8');
     const registrations = JSON.parse(fileContent);
 
-    // Check if wallet is already registered
+    // 4. Checks if wallet is already registered
     const isRegistered = registrations.some(
       (reg: Registration) => reg.address.toLowerCase() === address.toLowerCase()
     );
@@ -60,21 +66,23 @@ export async function POST(request: Request) {
       );
     }
 
-    // Add new registration
+    // 4. If not registered, creates a new registration 
     const newRegistration = {
       walletType: 'EVM',
       address,
       timestamp,
     };
 
+    // 5. Adds the new registration to the registrations array in memory
     registrations.push(newRegistration);
 
-    // Write back to file
+    // 6. Writes the new registration to the JSON file
     await fs.writeFile(
       registrationsPath,
       JSON.stringify(registrations, null, 2)
     );
 
+    // 7. Returns a success or error message to the client
     return NextResponse.json(
       { message: 'Registration successful' },
       { status: 200 }
