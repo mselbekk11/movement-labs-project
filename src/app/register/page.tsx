@@ -35,7 +35,7 @@ export default function Register() {
   // Hook for toast notifications
   const { toast } = useToast();
 
-  // Wagmi hook for signing messages - used twice in the handleRegister function
+  // Wagmi hooks are used for signing messages - used twice in the handleRegister function
   // First for authentication (verifying wallet ownership)
   // Second for registration (registering wallet)
   const { signMessageAsync } = useSignMessage({
@@ -71,11 +71,12 @@ export default function Register() {
     }
   };
 
-  // handle register wallet function - verify wallet ownership and register wallet functionality
-    // Everything moving forward from here happens after clicking Register wallet button
-    // handleRegister initially was a huge function containing everything and I decided to split it up for code organisation and reusability.
-    // handleRegister function now imports 3 key services from services/auth.ts
-    // CLICK REGISTER WALLET
+  // This handleRegister function handles everything from verifying wallet ownership to registering the wallet
+  // Everything moving forward from here happens after clicking Register wallet button
+  // handleRegister initially was a huge function containing everything and I decided to split it up for code organisation and reusability.
+  // handleRegister function now imports 3 key services from services/auth.ts
+  // CLICK REGISTER WALLET
+
   const handleRegister = async () => {
     if (!isConnected || !address) return;
     try {
