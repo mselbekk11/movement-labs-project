@@ -1,4 +1,8 @@
 // this is the service file for the auth endpoints
+// these 3 services make HTTP requests to API routes which take care of different tasks
+// Im going to walk through each one 
+// Click Register Wallet button
+
 
 // this getNonce function makes an HTTP POST request to the API route /api/nonce which includes the users wallet address
 // if a random nonce is succesfully created by the server, it is returned to the client

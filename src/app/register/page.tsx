@@ -27,7 +27,7 @@ import { getNonce, verifyWallet, registerWallet } from '@/services/auth';
 
 export default function Register() {
   // I am using Appkit from Reown to handle the wallet connection.
-  // AppKit is a comprehensive toolkit designed for developers to easily integrate wallet connections and other Web3 functionalities into their apps across both EVM and non-EVM chains
+  // AppKit is a comprehensive toolkit designed for developers to easily integrate wallet connections  into their apps across both EVM and non-EVM chains
   const { open } = useAppKit();
   const { address, isConnected } = useAppKitAccount();
   const { disconnect } = useDisconnect();
@@ -93,12 +93,14 @@ export default function Register() {
       });
 
       // 3. Register wallet
+      // Once verification has been approved, We create a timestamped registration message and get it signed by the wallet using the wagmi hook
       const timestamp = Date.now();
       const registrationMessage = `Register wallet ${address} at timestamp ${timestamp}`;
       const registrationSignature = await signMessageAsync({
         message: registrationMessage,
       });
 
+      // this data is then passed to the registerWallet function
       const result = await registerWallet({
         address,
         signature: registrationSignature,
