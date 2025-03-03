@@ -72,6 +72,10 @@ export default function Register() {
   };
 
   // handle register wallet function - verify wallet ownership and register wallet functionality
+    // Everything moving forward from here happens after clicking Register wallet button
+    // handleRegister initially was a huge function containing everything and I decided to split it up for code organisation and reusability.
+    // handleRegister function now imports 3 key services from services/auth.ts
+    // CLICK REGISTER WALLET
   const handleRegister = async () => {
     if (!isConnected || !address) return;
     try {
@@ -87,7 +91,6 @@ export default function Register() {
       });
       // Click Confirm
       // once confirmed this data is then passed to the verifyWallet function
-
 
       // 2. Verify wallet ownership
       await verifyWallet({
