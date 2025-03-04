@@ -22,5 +22,5 @@ export default function Home() {
   );
 }
 
-// this contains the button which when clicked uses
+// this page contains the button which when clicked uses
 // nexts link component which is a static route to my register page

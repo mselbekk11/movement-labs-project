@@ -36,7 +36,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No address provided' }, { status: 400 });
     }
 
-    // 4. Generates a random nonce using Web Crypto API
+    // 4. Generates a random nonce
     const nonce = generateNonce();
 
     // 5. Store the nonce using the lowercased address as key
